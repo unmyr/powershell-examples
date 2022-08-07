@@ -3,8 +3,10 @@
 === Install and Update
 
 ==== Linux
+
 [source,console]
 .Upgrade powershell
 ----
 $ sudo apt install powershell
 ----
+
