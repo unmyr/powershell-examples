@@ -1,0 +1,112 @@
+ifndef::leveloffset[]
+:toc: left
+:toclevels: 3
+:icons: font
+endif::[]
+
+include::header.adoc[]
+
+== PowerShell examples
+
+=== Hdd
+
+==== Show disk information
+
+* Gets a list of all PhysicalDisk objects
++
+[source,powershell]
+----
+Get-PhysicalDisk
+----
++
+[source,powershell]
+.Show member
+----
+> Get-PhysicalDisk | Get-Member
+----
+
+* Gets one or more disks visible to the operating system.
++
+[source,powershell]
+----
+> Get-Disk
+----
++
+[source,powershell]
+.Show member
+----
+> Get-Disk | Get-Member
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/get-physicaldisk?view=windowsserver2019-ps[Get-PhysicalDisk (Storage) | Microsoft Docs^]
+* https://docs.microsoft.com/en-us/powershell/module/storage/get-disk?view=windowsserver2019-ps[Get-Disk (Storage) | Microsoft Docs^]
+
+==== Get all RAW disks, initialize the disks, partition, and format them
+
+. Check disk number column and Partition Style column is `Raw`.
++
+[source,console]
+----
+PS C:\> Get-Disk
+----
+
+. Start powershell with the Run as Administrator
+
+. Initialize the disks, partition, and format them
++
+[source,powershell]
+----
+Get-Disk | Where-Object PartitionStyle -Eq "RAW" | Initialize-Disk -PartitionStyle GPT -PassThru | New-Partition -DriveLetter H -UseMaximumSize | Format-Volume -NewFileSystemLabel 'backup'
+----
+
+==== Initialize disk step by step
+
+. Check disk number
++
+[source,console]
+----
+PS C:\> Get-Disk
+----
+
+. Start powershell with the Run as Administrator
+
+. Initialize a disk on disk _2_ using the GPT partition
++
+[source,powershell]
+----
+Initialize-Disk -Number 2 -PartitionStyle GPT
+----
++
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/initialize-disk?view=windowsserver2019-ps[Initialize-Disk (Storage) | Microsoft Docs^]
+
+. Create a new partition on disk 2
++
+[source,powershell]
+----
+New-Partition -DiskNumber 2 -DriveLetter H
+----
++
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/new-partition?view=windowsserver2019-ps[New-Partition (Storage) | Microsoft Docs^]
+
+. Quick format `H` drives
++
+[source,powershell]
+----
+New-Partition -DiskNumber 2 -DriveLetter H -NewFileSystemLabel 'backup'
+----
++
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/format-volume?view=windowsserver2019-ps[Format-Volume (Storage) | Microsoft Docs^]
+
+==== How to convert my hard disk PartitionStyle from GPT back to RAW in Windows 10
+
+[source,powershell]
+----
+Clear-Disk -Number 2
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/clear-disk?view=windowsserver2019-ps[Clear-Disk (Storage) | Microsoft Docs^]

@@ -1,5 +1,12 @@
 {
   "[powershell]":{
     "editor.formatOnSave": true
-  }
+  },
+  "cSpell.words": [
+    "adocbuild",
+    "canastro",
+    "leveloffset",
+    "peaceiris",
+    "tonynv"
+  ]
 }
