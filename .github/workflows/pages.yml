@@ -26,11 +26,6 @@ jobs:
       uses: tonynv/asciidoctor-action@master
       with:
           program: "cd docs && make adoc"
-    - name: copy .gitignore file
-      uses: canastro/copy-file-action@master
-      with:
-        source: "gh-pages.gitignore"
-        target: "dist/.gitignore"
     - name: Build with Jekyll
       uses: actions/jekyll-build-pages@v1
       with:
