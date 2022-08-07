@@ -22,20 +22,20 @@ Get-PhysicalDisk
 [source,powershell]
 .Show member
 ----
-> Get-PhysicalDisk | Get-Member
+Get-PhysicalDisk | Get-Member
 ----
 
 * Gets one or more disks visible to the operating system.
 +
 [source,powershell]
 ----
-> Get-Disk
+Get-Disk
 ----
 +
 [source,powershell]
 .Show member
 ----
-> Get-Disk | Get-Member
+Get-Disk | Get-Member
 ----
 
 .References
