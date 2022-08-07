@@ -3,10 +3,14 @@
     "editor.formatOnSave": true
   },
   "cSpell.words": [
+    "acodec",
     "adocbuild",
     "canastro",
     "leveloffset",
+    "libopus",
     "peaceiris",
-    "tonynv"
+    "tonynv",
+    "vcodec",
+    "Vorbis"
   ]
 }

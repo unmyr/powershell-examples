@@ -8,6 +8,109 @@ include::header.adoc[]
 
 == PowerShell examples
 
+=== External command
+
+* https://adamtheautomator.com/powershell-exit/[How to Use the PowerShell Exit Command and Friends^] +
+  powershell exit terminal - Google 検索
+
+==== Get full path to binary in powershell
+
+Equivalent of cmd's "where" in powershell
+
+[source,powershell]
+----
+Get-Command command_name
+gcm command_name
+----
+
+.Examples
+* show `Path` attribute
++
+[source,console]
+----
+> gcm python | % Path
+C:\PythonNNN\python.exe
+> (gcm python).Path
+C:\PythonNNN\python.exe
+----
++
+[source,console]
+----
+> Get-Command -Name python | ForEach-Object Path
+C:\PythonNNN\python.exe
+> Get-Command -Name python | % Path
+C:\PythonNNN\python.exe
+> Get-Command -Name python | Select-Object -ExpandProperty Path
+C:\PythonNNN\python.exe
+> Get-Command -Name python | select -ExpandProperty Path
+C:\PythonNNN\python.exe
+----
++
+[source,console,subs="attributes+"]
+--------
+> Get-Command -Name python | Select-Object -Property Path
+
+Path
+----
+C:\PythonNNN\python.exe
+--------
+
+* Format-List
++
+[source,console]
+----
+> gcm python | fl
+
+
+Name            : python.exe
+CommandType     : Application
+Definition      : C:\PythonNNN\python.exe
+Extension       : .exe
+Path            : C:\PythonNNN\python.exe
+FileVersionInfo : File:             C:\PythonNNN\python.exe
+                  InternalName:     Python Console
+                  OriginalFilename: python.exe
+                  FileVersion:      3.MM.P
+                  FileDescription:  Python
+                  Product:          Python
+                  ProductVersion:   3.MM.P
+                  Debug:            False
+                  Patched:          False
+                  PreRelease:       False
+                  PrivateBuild:     False
+                  SpecialBuild:     False
+                  Language:         ニュートラル言語
+----
+
+==== Execute command
+
+[source,powershell]
+----
+  $process = Start-Process -FilePath ffmpeg.exe -ArgumentList "-i",$_.Name,"-vcodec","copy","-acodec","libopus",$_.Name.Replace('Vorbis', 'Opus') -NoNewWindow -PassThru -Wait
+  $process.ExitCode
+----
+
+[source,powershell]
+----
+  $pInfo = New-Object System.Diagnostics.Process
+  $pInfo.StartInfo.FileName = "...\ffmpeg.exe"
+  $arguments = "-y -i `"$($_.Name)`" -vcodec copy -acodec libopus `"$($_.Name.Replace('Vorbis', 'Opus'))`""
+  $pInfo.StartInfo.Arguments = $arguments
+  Write-Host $arguments
+  $pInfo.StartInfo.UseShellExecute = $false
+  $pInfo.StartInfo.CreateNoWindow = $true
+  $pInfo.StartInfo.RedirectStandardOutput = $true
+  $pInfo.StartInfo.StandardOutputEncoding = [Text.Encoding]::UTF8
+  $pInfo.StartInfo.RedirectStandardError = $true
+  $pInfo.StartInfo.StandardErrorEncoding = [Text.Encoding]::UTF8
+  $pInfo.Start()
+  $pInfo.WaitForExit()
+  $stdout = $pInfo.StandardOutput.ReadToEnd()
+  $stderr = $pInfo.StandardError.ReadToEnd()
+  Write-Host $stdout
+  Write-Host $stderr
+----
+
 === Hdd
 
 ==== Show disk information
