@@ -111,6 +111,39 @@ FileVersionInfo : File:             C:\PythonNNN\python.exe
   Write-Host $stderr
 ----
 
+=== String
+
+==== Combines multiple strings
+
+* Using `+`
++
+[source,powershell]
+----
+"abc" + "123" + "cdf"
+----
++
+[source,plaintext]
+.Result
+----
+abc123cdf
+----
+
+* Using Join
++
+[source,powershell]
+----
+"abc", "123", "cdf" -join ""
+----
++
+[source,plaintext]
+.Result
+----
+abc123cdf
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_join?view=powershell-7.2[about Join - PowerShell | Microsoft Docs^]
+
 === Filesystem
 
 ==== Path
