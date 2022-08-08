@@ -141,8 +141,22 @@ abc123cdf
 abc123cdf
 ----
 
+* Using concat
++
+[source,powershell]
+----
+[System.String]::Concat("abc", "123", "cdf")
+----
++
+[source,plaintext]
+.Result
+----
+abc123cdf
+----
+
 .References
 * https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_join?view=powershell-7.2[about Join - PowerShell | Microsoft Docs^]
+* https://docs.microsoft.com/en-us/dotnet/api/system.string?view=net-6.0[String Class (System) | Microsoft Docs^]
 
 === Filesystem
 
