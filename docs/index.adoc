@@ -111,6 +111,79 @@ FileVersionInfo : File:             C:\PythonNNN\python.exe
   Write-Host $stderr
 ----
 
+=== Filesystem
+
+==== Path
+
+* Combine a path with a child path
++
+[source,powershell]
+----
+Join-Path $env:TEMP -ChildPath foo.txt
+----
+
+* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/join-path?view=powershell-7.2[Join-Path (Microsoft.PowerShell.Management) - PowerShell | Microsoft Docs^]
+
+==== Create/Remove Directory
+
+* Create a directory
++
+[source,powershell]
+----
+New-Item -ItemType Directory foo
+----
++
+* Remove a directory
++
+[source,powershell]
+----
+Remove-Item -Path foo
+----
+
+==== Create/Remove/Copy File
+
+* Create a new file
++
+[source,powershell]
+----
+New-Item -ItemType File -Path foo.txt
+----
+
+* Remove a file
++
+[source,powershell]
+----
+Remove-Item -Path foo.txt
+----
+
+** Delete file if exists
++
+[source,powershell]
+----
+$FileName = "D:\PowerShell\ZeroFileSize.txt"
+if (Test-Path $FileName) {
+  Remove-Item -Force $FileName
+}
+----
+
+[source,powershell]
+----
+New-Item -ItemType File -Path (Join-Path $env:TEMP -ChildPath foo.txt)
+Remove-Item -Path (Join-Path $env:TEMP -ChildPath foo.txt)
+----
+
+==== Copy files
+
+* Copy a file
++
+[source,powershell]
+----
+Copy-Item "C:\foo.txt" -Destination "C:\Temp\"
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/copy-item?view=powershell-7.2[Copy-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Docs^]
+
 === Hdd
 
 ==== Show disk information
