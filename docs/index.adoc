@@ -29,6 +29,17 @@ if (!(Test-Path -Path "$Profile")) {New-Item -ItemType File -Path "$Profile" -Fo
 Add-Content -Value "Set-PSReadlineOption -BellStyle None" -Path "$Profile"
 ----
 
+=== Modules
+
+* Load functions
++
+[source,powershell]
+----
+. (Join-Path -Path $PSScriptRoot -ChildPath 'Get-Factorial')
+
+Get-Factorial($Args[0])
+----
+
 === Flow control statements
 
 * Loop using range
