@@ -8,6 +8,87 @@ include::header.adoc[]
 
 == PowerShell examples
 
+=== Flow control statements
+
+* Loop using range
++
+[source,powershell]
+----
+1..5
+----
++
+[source,powershell]
+.ForEach-Object
+----
+1..5 | % { Write-Output $_ }
+----
++
+[source,powershell]
+.ForEach-Object
+----
+1..5 | ForEach-Object { Write-Output $_ }
+----
++
+[source,powershell]
+----
+foreach($i in 1..5) {
+  Write-Output $i
+}
+----
+
+** Results
++
+[source,plaintext]
+.Results
+----
+1
+2
+3
+4
+5
+----
+
+* Loop using counter
++
+[source,powershell]
+----
+for($i=1; $i -le 5; $i++) {
+  Write-Output $i
+}
+----
+
+** Results
++
+[source,plaintext]
+.Results
+----
+1
+2
+3
+4
+5
+----
+
+* loop with condition
++
+[source,powershell]
+----
+$i = 1
+while ($i -le 5) {
+  Write-Output $i
+  $i += 1
+}
+----
++
+[source,powershell]
+----
+$i = 1
+do {
+  Write-Output $i
+  $i += 1
+} while ($i -le 5)
+----
+
 === External command
 
 * https://adamtheautomator.com/powershell-exit/[How to Use the PowerShell Exit Command and Friends^] +
@@ -111,6 +192,134 @@ FileVersionInfo : File:             C:\PythonNNN\python.exe
   Write-Host $stderr
 ----
 
+=== String
+
+==== Combines multiple strings
+
+* Using `+`
++
+[source,powershell]
+----
+"abc" + "123" + "cdf"
+----
++
+[source,plaintext]
+.Result
+----
+abc123cdf
+----
+
+* Using Join
++
+[source,powershell]
+----
+"abc", "123", "cdf" -join ""
+----
++
+[source,plaintext]
+.Result
+----
+abc123cdf
+----
+
+* Using concat
++
+[source,powershell]
+----
+[System.String]::Concat("abc", "123", "cdf")
+----
++
+[source,plaintext]
+.Result
+----
+abc123cdf
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_join?view=powershell-7.2[about Join - PowerShell | Microsoft Docs^]
+* https://docs.microsoft.com/en-us/dotnet/api/system.string?view=net-6.0[String Class (System) | Microsoft Docs^]
+
+==== Generate passwords
+
+[source,powershell]
+----
+Add-Type -AssemblyName System.web
+1..10 | %{ [System.web.security.membership]::GeneratePassword(12, 0) } | Sort-Object
+----
+
+=== Filesystem
+
+==== Path
+
+* Combine a path with a child path
++
+[source,powershell]
+----
+Join-Path $env:TEMP -ChildPath foo.txt
+----
+
+* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/join-path?view=powershell-7.2[Join-Path (Microsoft.PowerShell.Management) - PowerShell | Microsoft Docs^]
+
+==== Create/Remove Directory
+
+* Create a directory
++
+[source,powershell]
+----
+New-Item -ItemType Directory foo
+----
++
+* Remove a directory
++
+[source,powershell]
+----
+Remove-Item -Path foo
+----
+
+==== Create/Remove/Copy File
+
+* Create a new file
++
+[source,powershell]
+----
+New-Item -ItemType File -Path foo.txt
+----
+
+* Remove a file
++
+[source,powershell]
+----
+Remove-Item -Path foo.txt
+----
+
+** Delete file if exists
++
+[source,powershell]
+----
+$FileName = "D:\PowerShell\ZeroFileSize.txt"
+if (Test-Path $FileName) {
+  Remove-Item -Force $FileName
+}
+----
+
+[source,powershell]
+----
+New-Item -ItemType File -Path (Join-Path $env:TEMP -ChildPath foo.txt)
+Remove-Item -Path (Join-Path $env:TEMP -ChildPath foo.txt)
+----
+
+==== Copy files
+
+* Copy a file
++
+[source,powershell]
+----
+Copy-Item "C:\foo.txt" -Destination "C:\Temp\"
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/copy-item?view=powershell-7.2[Copy-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Docs^]
+
 === Hdd
 
 ==== Show disk information
@@ -213,3 +422,13 @@ Clear-Disk -Number 2
 
 .References
 * https://docs.microsoft.com/en-us/powershell/module/storage/clear-disk?view=windowsserver2019-ps[Clear-Disk (Storage) | Microsoft Docs^]
+
+=== Testing
+
+[source,powershell]
+----
+Install-Module -Name Pester -Force -SkipPublisherCheck
+----
+
+.References
+* https://pester.dev/docs/introduction/installation[Installation and Update | Pester^]
