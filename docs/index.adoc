@@ -446,9 +446,24 @@ Clear-Disk -Number 2
 
 === Testing
 
+* pwsh
++
 [source,powershell]
 ----
 Install-Module -Name Pester -Force -SkipPublisherCheck
+----
+
+* Windows 10
++
+[source,powershell]
+----
+$module = "C:\Program Files\WindowsPowerShell\Modules\Pester"
+takeown /F $module /A /R
+icacls $module /reset
+icacls $module /grant "*S-1-5-32-544:F" /inheritance:d /T
+Remove-Item -Path $module -Recurse -Force -Confirm:$false
+
+Install-Module -Name Pester -Force
 ----
 
 .References

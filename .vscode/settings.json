@@ -10,7 +10,9 @@
     "leveloffset",
     "libopus",
     "peaceiris",
+    "pwsh",
     "Readline",
+    "takeown",
     "tonynv",
     "vcodec",
     "Vorbis"
