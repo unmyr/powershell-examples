@@ -1,0 +1,13 @@
+== math
+
+[source,console]
+----
+> Invoke-Pester ./Get-Factorial.Tests.ps1
+
+Starting discovery in 1 files.
+Discovery found 4 tests in 38ms.
+Running tests.
+[+] /home/guest/tmp_pwsh/powershell-examples/src/math/Get-Factorial.Tests.ps1 134ms (43ms|57ms)
+Tests completed in 139ms
+Tests Passed: 4, Failed: 0, Skipped: 0 NotRun: 0
+----
