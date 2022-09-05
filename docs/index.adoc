@@ -8,6 +8,27 @@ include::header.adoc[]
 
 == PowerShell examples
 
+=== Profile
+
+==== Turn off the beep
+
+* Windows
++
+[source,powershell]
+----
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+if (!(Test-Path -Path "$Profile")) {New-Item -ItemType File -Path "$Profile" -Force}
+Add-Content -Value "Set-PSReadlineOption -BellStyle None" -Path "$Profile"
+----
+
+* Linux
++
+[source,powershell]
+----
+if (!(Test-Path -Path "$Profile")) {New-Item -ItemType File -Path "$Profile" -Force}
+Add-Content -Value "Set-PSReadlineOption -BellStyle None" -Path "$Profile"
+----
+
 === Flow control statements
 
 * Loop using range
