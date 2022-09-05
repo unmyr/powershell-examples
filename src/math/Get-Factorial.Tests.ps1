@@ -1,7 +1,7 @@
 Import-Module Pester
 
 BeforeAll {
-  . ./Get-Factorial
+  . $PSCommandPath.Replace('.Tests.ps1','.ps1')
 }
 
 Describe "Factorial" {
