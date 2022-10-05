@@ -455,6 +455,21 @@ Clear-Disk -Number 2
 .References
 * https://docs.microsoft.com/en-us/powershell/module/storage/clear-disk?view=windowsserver2019-ps[Clear-Disk (Storage) | Microsoft Docs^]
 
+=== Windows
+
+==== Windows Registry
+
+* Get property
++
+[source,powershell]
+----
+Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Android Studio'
+----
+
+* Get-ChildItem -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'
+
+* Remove registry Key using `Remove-Item`
+
 === Testing
 
 * pwsh
