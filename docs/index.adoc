@@ -308,6 +308,97 @@ New-Item -ItemType Directory foo
 Remove-Item -Path foo
 ----
 
+==== Rename/Move file
+
+* Rename single file
+
+** Using `Rename-Item`
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+Rename-Item (Join-Path $sourceDir "apple - a1.txt") -NewName "apple - a01.txt"
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+** Using `Move-Item`
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+Move-Item (Join-Path $sourceDir "apple - a1.txt") (Join-Path $sourceDir "apple - a01.txt")
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+** Using `Rename-Item` with pipe
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+$file1 | Rename-Item -NewName "apple - a01.txt"
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+** Using `Move-Item` with pipe
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+$file1 | Move-Item -Destination (Join-Path $sourceDir "apple - a01.txt")
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+** Using `MoveTo`
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+$file1.MoveTo((Join-Path $file1.Directory "apple - a01.txt"))
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+* Rename multiple files
++
+[source,powershell]
+----
+include::../src/fs/RenameFiles.ps1[tag=rename-files]
+----
++
+[subs="quotes"]
+.Results
+----
+... Before
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/10/16     12:30              0 apple - *n1*.txt
+-a----        2022/10/16     12:30              0 apple - *n2*.txt
+-a----        2022/10/16     12:30              0 apple - *n3*.txt
+-a----        2022/10/16     12:30              0 banana - n1.txt
+-a----        2022/10/16     12:30              0 banana - n2.txt
+-a----        2022/10/16     12:30              0 banana - n3.txt
+INFO: Rename succeeded.
+
+... After
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/10/16     12:30              0 apple - *n01*.txt
+-a----        2022/10/16     12:30              0 apple - *n02*.txt
+-a----        2022/10/16     12:30              0 apple - *n03*.txt
+-a----        2022/10/16     12:30              0 banana - n1.txt
+-a----        2022/10/16     12:30              0 banana - n2.txt
+-a----        2022/10/16     12:30              0 banana - n3.txt
+----
+
+.References
+* https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/rename-item?view=powershell-5.1#outputs[Rename-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Learn^]
+* https://learn.microsoft.com/ja-jp/powershell/module/microsoft.powershell.management/move-item?view=powershell-5.1[Move-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Learn^]
+
 ==== Create/Remove/Copy File
 
 * Create a new file
