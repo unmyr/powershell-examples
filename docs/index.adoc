@@ -43,13 +43,178 @@ Get-Factorial($Args[0])
 * https://adamtheautomator.com/powershell-environment-variables/[PowerShell and Environment Variables: A Deep Dive^] +
 powershell remove env - Google 検索
 
-.List environment variables
 * List environment variables
 +
 [source,powershell]
 ----
 dir env:
 ----
++
+[source,powershell]
+----
+Get-ChildItem -Path Env:
+----
++
+[source,powershell]
+----
+[System.Environment]::GetEnvironmentVariables() | Sort-Object
+----
+
+* Get environment variables
+
+** Get value from object
++
+[source,powershell]
+----
+(Get-Item -Path Env:ComputerName).Value
+----
+
+** Get content
++
+[source,powershell]
+----
+Get-Content -Path Env:ComputerName
+----
+
+** Get property
++
+[source,powershell]
+----
+([Environment]::GetEnvironmentVariables()).COMPUTERNAME
+----
++
+[source,powershell]
+----
+([System.Environment]::GetEnvironmentVariables()).COMPUTERNAME
+----
+
+* Manage process-level environment variables
+
+** Get process-level environment variable
++
+[source,powershell]
+----
+([System.Environment]::GetEnvironmentVariables([System.EnvironmentVariableTarget]::Process)).TestKey
+----
+
+** Set environment variable temporary
++
+[source,powershell]
+----
+$Env:TestKey = 'TestValue'
+----
++
+[source,powershell]
+----
+[Environment]::SetEnvironmentVariable('TestKey', 'TestValue')
+----
++
+[source,powershell]
+----
+[System.Environment]::SetEnvironmentVariable('TestKey', 'TestValue', [System.EnvironmentVariableTarget]::Process)
+----
+
+** Remove environment variable
++
+[source,powershell]
+----
+$Env:TestKey = ''
+----
++
+[source,powershell]
+----
+[Environment]::SetEnvironmentVariable('TestKey', '', 'Process')
+----
++
+[source,powershell]
+----
+[System.Environment]::SetEnvironmentVariable('TestKey', '', [System.EnvironmentVariableTarget]::Process)
+----
+
+* Manage user environment variables
+
+** Get a user environment variable
++
+[source,powershell]
+----
+([Environment]::GetEnvironmentVariables("User")).TestKey
+----
++
+[source,powershell]
+----
+([System.Environment]::GetEnvironmentVariables([System.EnvironmentVariableTarget]::User)).TestKey
+----
++
+[source,powershell]
+----
+Get-ItemProperty -Path HKCU:\Environment -Name TestKey
+----
+
+** Set user environment variable permanently
++
+[source,powershell]
+----
+[System.Environment]::SetEnvironmentVariable('TestKey', 'TestValue', "User")
+----
+
+** Remove user environment variable permanently
++
+[source,powershell]
+----
+[Environment]::SetEnvironmentVariable('TestKey', '', "User")
+----
++
+[source,powershell]
+----
+[System.Environment]::SetEnvironmentVariable('TestKey', '', [System.EnvironmentVariableTarget]::User)
+----
+
+* Manage system environment variables
+
+** Get a system environment variable
++
+[source,powershell]
+----
+([Environment]::GetEnvironmentVariables("Machine")).TestKey
+----
++
+[source,powershell]
+----
+([System.Environment]::GetEnvironmentVariables([System.EnvironmentVariableTarget]::Machine)).TestKey
+----
++
+[source,powershell]
+----
+Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" -Name TestKey
+----
+
+** Set environment variable permanently +
+Run as Administrator
++
+[source,powershell]
+----
+[System.Environment]::SetEnvironmentVariable('TestKey', 'TestValue', 'Machine')
+----
++
+[source,powershell]
+----
+[System.Environment]::SetEnvironmentVariable('TestKey', 'TestValue', [System.EnvironmentVariableTarget]::Machine)
+----
+
+** Remove environment variable permanently +
+Run as Administrator
++
+[source,powershell]
+----
+[System.Environment]::SetEnvironmentVariable('TestKey', '', 'Machine')
+----
++
+[source,powershell]
+----
+[System.Environment]::SetEnvironmentVariable('TestKey', '', [System.EnvironmentVariableTarget]::Machine)
+----
+
+==== Manage path environment
 
 * Split path
 +
@@ -57,6 +222,91 @@ dir env:
 ----
 $Env:PATH.split(';')
 ----
+
+==== Temporary directory
+
+* Get temporary path
+
+** Using `System.IO.Path`: `C:\Users\{username}\AppData\Local\Temp\`
++
+[source,powershell]
+----
+[System.IO.Path]::GetTempPath()
+----
+
+** Get from environment variables
++
+[source,powershell]
+----
+$env:TEMP
+----
+
+** Get from Windows Registry
++
+--
+* user environment variables
++
+[source,powershell]
+----
+Get-ItemProperty -Path HKCU:\Environment -Name TEMP
+----
+
+* Machine-scoped environment variables
++
+[source,powershell]
+----
+Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" -Name TEMP
+----
+--
+
+* Create a temporary file
++
+[source,powershell]
+----
+$TempFile = New-TemporaryFile
+----
+
+* Examples
++
+[source,powershell]
+----
+$TempFile = New-TemporaryFile
+Write-Host $TempFile.FullName
+Invoke-WebRequest -Uri https://httpbin.org/get -OutFile $TempFile
+Get-Content -Path $TempFile
+Remove-Item -Path $TempFile
+----
++
+[source,powershell]
+----
+try {
+    # TempFileCollection manages your temp files and deletes them when it is disposed.
+    $tempFiles = [CodeDom.Compiler.TempFileCollection]::new()
+
+    # TempFileCollection doesn't create your temp files for you, you gotta do that yourself.
+    $tempFile = New-TemporaryFile
+
+    # and you gotta remember to tell TempFileCollection about this new file.
+    $tempFiles.AddFile($tempFile.FullName, $false)
+
+    # now you can use $tempFile
+    Write-Host $tempFile.FullName
+    Invoke-WebRequest -Uri https://httpbin.org/get -OutFile $tempFile
+    Get-Content -Path $tempFile
+}
+finally {
+    # when you dispose the TempFileCollection, it will delete all the files you added to it.
+    if ($null -ne $tempFiles) {
+        $tempFiles.Dispose()  # Deletes all temp files
+    }
+}
+----
+
+.References
+* https://stackoverflow.com/questions/34559553/create-a-temporary-directory-in-powershell[Create a temporary directory in PowerShell? - Stack Overflow^]
+* https://devblogs.microsoft.com/scripting/create-temporary-files-with-powershell-5/[Create Temporary Files with PowerShell 5 - Scripting Blog^] +
+  powershell New-TemporaryFile remove on exit - Google Search
+* https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/new-temporaryfile?view=powershell-5.1[New-TemporaryFile (Microsoft.PowerShell.Utility) - PowerShell | Microsoft Learn^]
 
 === Array
 
@@ -698,6 +948,123 @@ Clear-Disk -Number 2
 
 === Windows
 
+==== Special Environment variables
+
+[cols="1a,1a,2a" options="autowidth"]
+|===
+| Env               | Examples            | Description
+
+| `ComputerName`    |                     | Your computer name
+| `HomeDrive`       | `C:`                |
+| `HomePath`        | `\Users\{username}` |
+| `SessionName`     | `Console`           |
+| `UserDnsDomain`   | | The Fully Qualified Domain Name of the Active Directory domain
+| `UserDomain`      |                     | User domain name
+| `UserName`        |                     | User name
+|===
+
+
+==== Special folder
+
+* List special folder names
++
+[source,powershell]
+----
+[Environment+SpecialFolder]::GetNames([Environment+SpecialFolder]) | Sort-Object
+----
++
+[source,plaintext]
+.Results
+----
+AdminTools
+ApplicationData
+CDBurning
+CommonAdminTools
+CommonApplicationData
+CommonDesktopDirectory
+CommonDocuments
+CommonMusic
+CommonOemLinks
+CommonPictures
+CommonProgramFiles
+CommonProgramFilesX86
+CommonPrograms
+CommonStartMenu
+CommonStartup
+CommonTemplates
+CommonVideos
+Cookies
+Desktop
+DesktopDirectory
+Favorites
+Fonts
+History
+InternetCache
+LocalApplicationData
+LocalizedResources
+MyComputer
+MyDocuments
+MyMusic
+MyPictures
+MyVideos
+NetworkShortcuts
+Personal
+PrinterShortcuts
+ProgramFiles
+ProgramFilesX86
+Programs
+Recent
+Resources
+SendTo
+StartMenu
+Startup
+System
+SystemX86
+Templates
+UserProfile
+Windows
+----
+
+* Application special path
++
+[source,powershell]
+----
+[Environment]::GetFolderPath([Environment+SpecialFolder]::ApplicationData)
+----
++
+[cols="1a,1a,2a" options="autowidth"]
+|===
+| Env               | Fields                  | Examples
+
+| `ALLUSERSPROFILE` | `CommonApplicationData` | `C:\ProgramData`
+| `AppData`         | `ApplicationData`       | `C:\Users\{username}\AppData\Roaming`
+| `LocalAppData`    | `LocalApplicationData`  | `C:\Users\{username}\AppData\Local`
+| `SystemRoot`      | `Windows`               | `C:\Windows`
+| `TEMP`            |                         | `C:\Users\{username}\AppData\Local\Temp`
+| `USERPROFILE`     | `UserProfile`           | `C:\Users\{username}`
+|===
+
+* Get profile path
++
+[source,powershell]
+----
+$PROFILE | Get-Member -Type NoteProperty | Format-Table -Wrap
+----
++
+----
+%HOMEPATH%\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+----
+
+.References
+* https://superuser.com/questions/217504/is-there-a-list-of-windows-special-directories-shortcuts-like-temp[Is there a list of Windows special directories/shortcuts (like %TEMP%)? - Super User^] +
+  windows explorer list of Special Folder - Google Search
+* https://pureinfotech.com/list-environment-variables-windows-10/[Complete list of environment variables on Windows 10 - Pureinfotech^] +
+  windows variables appdata - Google Search
+* https://devblogs.microsoft.com/scripting/the-easy-way-to-use-powershell-to-work-with-special-folders/[The Easy Way to Use PowerShell to Work with Special Folders - Scripting Blog^] +
+  powershell Environment+SpecialFolder - Google Search
+* https://learn.microsoft.com/en-us/dotnet/api/system.environment.specialfolder?redirectedfrom=MSDN&view=netframework-4.8[Environment.SpecialFolder Enum (System) | Microsoft Learn^]
+
+
 ==== Windows Registry
 
 * Get property
@@ -705,6 +1072,27 @@ Clear-Disk -Number 2
 [source,powershell]
 ----
 Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Android Studio'
+----
+
+** Get User-scoped environment variables
++
+[source,powershell]
+----
+Get-ItemProperty -Path HKCU:\Environment -Name TEMP
+----
+
+** Get Machine-scoped environment variables
++
+[source,powershell]
+----
+Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Environment" -Name TEMP
+----
+
+** Get .Net versions
++
+[source,powershell]
+----
+Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse | Get-ItemProperty -Name version -EA 0 | Where { $_.PSChildName -Match '^(?!S)\p{L}'} | Select PSChildName, version
 ----
 
 * Get-ChildItem
@@ -751,19 +1139,6 @@ Invoke-WebRequest http://$((bash.exe -c "hostname -I").Split(" ")[0]):8080/hello
 [source,powershell]
 ----
 Get-NetIPInterface | Where-Object {$_.InterfaceAlias -eq 'vEthernet (WSL)' -and $_.AddressFamily -eq 'IPv4'}
-----
-
-==== Profile
-
-. Get profile path
-+
-[source,powershell]
-----
-$PROFILE | Get-Member -Type NoteProperty | Format-Table -Wrap
-----
-+
-----
-%HOMEPATH%\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
 ----
 
 ==== Turn off the beep

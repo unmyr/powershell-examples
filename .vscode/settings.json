@@ -5,16 +5,23 @@
   "cSpell.words": [
     "acodec",
     "adocbuild",
+    "ALLUSERSPROFILE",
+    "APPDATA",
     "canastro",
+    "COMPUTERNAME",
     "Concat",
+    "HKCU",
     "HOMEPATH",
     "leveloffset",
     "libopus",
+    "LOCALAPPDATA",
     "peaceiris",
     "pwsh",
     "Readline",
+    "SESSIONNAME",
     "takeown",
     "tonynv",
+    "USERPROFILE",
     "vcodec",
     "Vorbis"
   ]
