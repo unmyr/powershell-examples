@@ -4,9 +4,181 @@ ifndef::leveloffset[]
 :icons: font
 endif::[]
 
+// For preview in VS-Code
+ifndef::imagesdir[]
+:imagesdir: images
+endif::[]
+
 include::header.adoc[]
 
+:bl: pass:p[ +]
+
 == PowerShell examples
+
+The examples in this article will use PowerShell 5.1.1.
+
+=== Terminal
+
+==== Code page
+
+* Change to UTF-8 code page.
++
+[source,powershell]
+----
+chcp 65001
+$OutputEncoding = [System.Text.Encoding]::UTF8
+----
+
+* Change to ASCII(US-ASCII) code page.
++
+[source,powershell]
+----
+chcp 20127
+----
+
+* Change to Shift-JIS code page.
++
+[source,powershell]
+.Shift-JISのコードページに変更します。
+----
+chcp 932
+----
+
+==== Profile
+
+* https://stackoverflow.com/questions/567650/how-to-reload-user-profile-from-script-file-in-powershell[How to reload user profile from script file in PowerShell - Stack Overflow^]
+* https://www.tipsfound.com/windows10/11010[Windows 10 環境変数の一覧と既定値^]
+
+. Get profile path
++
+[source,powershell]
+----
+$PROFILE | Get-Member -Type NoteProperty | Format-Table -Wrap
+----
++
+----
+%HOMEPATH%\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1
+----
+
+. Create a new profile +
+In order to create a profile you need to use the following command.
++
+[source,powershell]
+----
+New-Item -ItemType File -Path $profile -Force
+----
++
+[NOTE]
+Note that the above will replace any existing profile. If you want to ensure that you will not replace any profile that already exists and lose the changes that you have applied already, you can try the below.
+
+. Edit a profile
++
+[source,powershell]
+----
+notepad $profile
+----
+
+. No Profile
++
+----
+PowerShell -NoProfile
+----
+
+. Load profile
++
+[source,powershell]
+----
+. $PROFILE
+----
++
+[source,powershell]
+----
+. $profile
+----
+
+.References
+* https://www.sconstantinou.com/powershell-profiles/[PowerShell Profiles - Stephanos Constantinou Blog^] +
+  windows powershell Get profile path - Google 検索
+
+==== Change color
+* http://fractorium.com/?article=configuring-powershell-in-windows-terminal[Configuring Powershell in Windows Terminal «  Fractorium^]
+* https://qiita.com/AWtnb/items/5551fcc762ed2ad92a81[【PowerShell】PsReadLine 設定のススメ - Qiita^] +
+  Set-PSReadLineOption - Google 検索
+
+[source,powershell]
+----
+Get-PSReadLineOption
+Set-PSReadLineOption -Colors @{Command = "Black"; Member = "Black"; Number = "Black" }
+----
+
+==== Changing the command prompt
+
+[cols="a,a",options="autowidth"]
+|===
+| Code | Rendered
+
+|
+[source,powershell]
+----
+function prompt {"PS $(get-date)> "}
+----
+| `PS 08/08/2021 16:14:32> `
+
+|
+[source,powershell]
+----
+function prompt {"PS $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')> "}
+----
+| `PS 2021-08-08 16:16:33> `
+
+|
+[source,powershell]
+----
+function prompt {"PS $(Get-Date -UFormat '%T')> "}
+----
+| `PS 16:17:52> `
+
+|
+[source,powershell]
+.Default
+----
+function prompt {"PS $pwd> "}
+----
+| `PS C:\...> `
+
+|
+[source,powershell]
+.Default
+----
+function prompt {"PS " + (Split-Path (Get-Location) -Leaf) + "> "}
+----
+| `PS foo> `
+
+
+|===
+
+.References
+* https://stackoverflow.com/questions/5725888/windows-powershell-changing-the-command-prompt[Windows PowerShell: changing the command prompt - Stack Overflow^] +
+  powershell change prompt temporarily - Google Search
+
+==== Turn off the beep
+
+* Windows
++
+[source,powershell]
+----
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+if (!(Test-Path -Path "$Profile")) {New-Item -ItemType File -Path "$Profile" -Force}
+Add-Content -Value "Set-PSReadlineOption -BellStyle None" -Path "$Profile"
+----
+
+* Linux
++
+[source,powershell]
+----
+if (!(Test-Path -Path "$Profile")) {New-Item -ItemType File -Path "$Profile" -Force}
+Add-Content -Value "Set-PSReadlineOption -BellStyle None" -Path "$Profile"
+----
 
 === Scripting
 
@@ -16,6 +188,14 @@ include::header.adoc[]
 ----
 $PSVersionTable
 ----
+
+[cols="1a,4" options="autowidth"]
+|===
+| PSVersion | OS
+
+| 4.0.x     | Windows 8.1, Windows Server 2012 R2
+| 5.1.x     | Windows 10, Windows Server 2016, Windows 11, Windows Server 2022
+|===
 
 ==== Get script location
 
@@ -333,6 +513,31 @@ Get-Content -Path $TempFile
   powershell New-TemporaryFile remove on exit - Google Search
 * https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/new-temporaryfile?view=powershell-5.1[New-TemporaryFile (Microsoft.PowerShell.Utility) - PowerShell | Microsoft Learn^]
 
+==== Testing
+
+* pwsh
++
+[source,powershell]
+----
+Install-Module -Name Pester -Force -SkipPublisherCheck
+----
+
+* Windows 10
++
+[source,powershell]
+----
+$module = "C:\Program Files\WindowsPowerShell\Modules\Pester"
+takeown /F $module /A /R
+icacls $module /reset
+icacls $module /grant "*S-1-5-32-544:F" /inheritance:d /T
+Remove-Item -Path $module -Recurse -Force -Confirm:$false
+
+Install-Module -Name Pester -Force
+----
+
+.References
+* https://pester.dev/docs/introduction/installation[Installation and Update | Pester^]
+
 === Array
 
 [source,ps1con]
@@ -391,6 +596,15 @@ abc123cdf
 .Result
 ----
 abc123cdf
+----
+
+* Variable substitution in strings
++
+[source,powershell]
+----
+PS> $x = "Text"
+PS> "This is a `"$x`""
+This is a "Text"
 ----
 
 .References
@@ -681,7 +895,7 @@ FileVersionInfo : File:             C:\PythonNNN\python.exe
   Write-Host $stderr
 ----
 
-=== Filesystem
+=== File system
 
 ==== Path
 
@@ -693,301 +907,6 @@ Join-Path $env:TEMP -ChildPath foo.txt
 ----
 
 * https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/join-path?view=powershell-7.2[Join-Path (Microsoft.PowerShell.Management) - PowerShell | Microsoft Docs^]
-
-==== Create/Remove Directory
-
-* Create a directory
-+
-[source,powershell]
-----
-New-Item -ItemType Directory foo
-----
-+
-* Remove a directory
-+
-[source,powershell]
-----
-Remove-Item -Path foo
-----
-
-==== Rename/Move file
-
-* Rename single file
-
-** Using `Rename-Item`
-+
-[source,powershell]
-----
-$sourceDir = "C:\path to dir"
-New-Item -path (Join-Path $sourceDir "apple - a1.txt")
-Rename-Item (Join-Path $sourceDir "apple - a1.txt") -NewName "apple - a01.txt"
-Remove-Item (Join-Path $sourceDir "apple - a01.txt")
-----
-
-** Using `Move-Item`
-+
-[source,powershell]
-----
-$sourceDir = "C:\path to dir"
-$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
-Move-Item (Join-Path $sourceDir "apple - a1.txt") (Join-Path $sourceDir "apple - a01.txt")
-Remove-Item (Join-Path $sourceDir "apple - a01.txt")
-----
-
-** Using `Rename-Item` with pipe
-+
-[source,powershell]
-----
-$sourceDir = "C:\path to dir"
-$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
-$file1 | Rename-Item -NewName "apple - a01.txt"
-Remove-Item (Join-Path $sourceDir "apple - a01.txt")
-----
-
-** Using `Move-Item` with pipe
-+
-[source,powershell]
-----
-$sourceDir = "C:\path to dir"
-$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
-$file1 | Move-Item -Destination (Join-Path $sourceDir "apple - a01.txt")
-Remove-Item (Join-Path $sourceDir "apple - a01.txt")
-----
-
-** Using `MoveTo`
-+
-[source,powershell]
-----
-$sourceDir = "C:\path to dir"
-$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
-$file1.MoveTo((Join-Path $file1.Directory "apple - a01.txt"))
-Remove-Item (Join-Path $sourceDir "apple - a01.txt")
-----
-
-* Rename multiple files
-+
-[source,powershell]
-----
-include::../src/fs/RenameFiles.ps1[tag=rename-files]
-----
-+
-[subs="quotes"]
-.Results
-----
-... Before
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
--a----        2022/10/16     12:30              0 apple - *n1*.txt
--a----        2022/10/16     12:30              0 apple - *n2*.txt
--a----        2022/10/16     12:30              0 apple - *n3*.txt
--a----        2022/10/16     12:30              0 banana - n1.txt
--a----        2022/10/16     12:30              0 banana - n2.txt
--a----        2022/10/16     12:30              0 banana - n3.txt
-INFO: Rename succeeded.
-
-... After
-
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
--a----        2022/10/16     12:30              0 apple - *n01*.txt
--a----        2022/10/16     12:30              0 apple - *n02*.txt
--a----        2022/10/16     12:30              0 apple - *n03*.txt
--a----        2022/10/16     12:30              0 banana - n1.txt
--a----        2022/10/16     12:30              0 banana - n2.txt
--a----        2022/10/16     12:30              0 banana - n3.txt
-----
-
-.References
-* https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/rename-item?view=powershell-5.1#outputs[Rename-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Learn^]
-* https://learn.microsoft.com/ja-jp/powershell/module/microsoft.powershell.management/move-item?view=powershell-5.1[Move-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Learn^]
-
-==== Create/Remove/Copy File
-
-* Create a new file
-+
-[source,powershell]
-----
-New-Item -ItemType File -Path foo.txt
-----
-
-* Remove a file
-+
-[source,powershell]
-----
-Remove-Item -Path foo.txt
-----
-
-** Delete file if exists
-+
-[source,powershell]
-----
-$FileName = "D:\PowerShell\ZeroFileSize.txt"
-if (Test-Path $FileName) {
-  Remove-Item -Force $FileName
-}
-----
-
-[source,powershell]
-----
-New-Item -ItemType File -Path (Join-Path $env:TEMP -ChildPath foo.txt)
-Remove-Item -Path (Join-Path $env:TEMP -ChildPath foo.txt)
-----
-
-==== Copy files
-
-* Copy a file
-+
-[source,powershell]
-----
-Copy-Item "C:\foo.txt" -Destination "C:\Temp\"
-----
-
-.References
-* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/copy-item?view=powershell-7.2[Copy-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Docs^]
-
-==== Archive
-
-[source,powershell]
-----
-Compress-Archive memo.txt -DestinationPath out.zip
-Compress-Archive memo.txt -DestinationPath out.zip -Update -CompressionLevel NoCompression
-Compress-Archive memo.txt -DestinationPath out.zip -Update -CompressionLevel Optimal
-Compress-Archive memo.txt -DestinationPath out.zip -Update -CompressionLevel Fastest
-----
-
-[source,console]
-----
-> [io.compression.ZipFile]::OpenRead(".\Downloads\out.zip").entries | ? { $_.FullName -match "^[^/]+/*$"} | ft -a FullName,LastWriteTime
-FullName LastWriteTime
--------- -------------
-memo.txt 2020/12/26 14:11:28 +09:00
-----
-
-.References
-* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.archive/compress-archive?view=powershell-7.2[Compress-Archive (Microsoft.PowerShell.Archive) - PowerShell | Microsoft Docs^] +
-  Compress-Archive - Google 検索
-* https://docs.microsoft.com/ja-jp/dotnet/api/system.io.compression.zipfile.openread?view=net-6.0[ZipFile.OpenRead(String) メソッド (System.IO.Compression) | Microsoft Docs^]
-
-=== Hdd
-
-==== Show disk information
-
-* Gets a list of all PhysicalDisk objects
-+
-[source,powershell]
-----
-Get-PhysicalDisk
-----
-+
-[source,powershell]
-.Show member
-----
-Get-PhysicalDisk | Get-Member
-----
-
-* Gets one or more disks visible to the operating system.
-+
-[source,powershell]
-----
-Get-Disk
-----
-+
-[source,powershell]
-.Show member
-----
-Get-Disk | Get-Member
-----
-
-.References
-* https://docs.microsoft.com/en-us/powershell/module/storage/get-physicaldisk?view=windowsserver2019-ps[Get-PhysicalDisk (Storage) | Microsoft Docs^]
-* https://docs.microsoft.com/en-us/powershell/module/storage/get-disk?view=windowsserver2019-ps[Get-Disk (Storage) | Microsoft Docs^]
-
-==== Get all RAW disks, initialize the disks, partition, and format them
-
-. Check disk number column and Partition Style column is `Raw`.
-+
-[source,console]
-----
-PS C:\> Get-Disk
-----
-
-. Start powershell with the Run as Administrator
-
-. Initialize the disks, partition, and format them
-+
-[source,powershell]
-----
-Get-Disk | Where-Object PartitionStyle -Eq "RAW" | Initialize-Disk -PartitionStyle GPT -PassThru | New-Partition -DriveLetter H -UseMaximumSize | Format-Volume -NewFileSystemLabel 'backup'
-----
-
-==== Initialize disk step by step
-
-. Check disk number
-+
-[source,console]
-----
-PS C:\> Get-Disk
-----
-
-. Start powershell with the Run as Administrator
-
-. Initialize a disk on disk _2_ using the GPT partition
-+
-[source,powershell]
-----
-Initialize-Disk -Number 2 -PartitionStyle GPT
-----
-+
-.References
-* https://docs.microsoft.com/en-us/powershell/module/storage/initialize-disk?view=windowsserver2019-ps[Initialize-Disk (Storage) | Microsoft Docs^]
-
-. Create a new partition on disk 2
-+
-[source,powershell]
-----
-New-Partition -DiskNumber 2 -DriveLetter H
-----
-+
-.References
-* https://docs.microsoft.com/en-us/powershell/module/storage/new-partition?view=windowsserver2019-ps[New-Partition (Storage) | Microsoft Docs^]
-
-. Quick format `H` drives
-+
-[source,powershell]
-----
-New-Partition -DiskNumber 2 -DriveLetter H -NewFileSystemLabel 'backup'
-----
-+
-.References
-* https://docs.microsoft.com/en-us/powershell/module/storage/format-volume?view=windowsserver2019-ps[Format-Volume (Storage) | Microsoft Docs^]
-
-==== How to convert my hard disk PartitionStyle from GPT back to RAW in Windows 10
-
-[source,powershell]
-----
-Clear-Disk -Number 2
-----
-
-.References
-* https://docs.microsoft.com/en-us/powershell/module/storage/clear-disk?view=windowsserver2019-ps[Clear-Disk (Storage) | Microsoft Docs^]
-
-=== Windows
-
-==== Special Environment variables
-
-[cols="1a,1a,2a" options="autowidth"]
-|===
-| Env               | Examples            | Description
-
-| `ComputerName`    |                     | Your computer name
-| `HomeDrive`       | `C:`                |
-| `HomePath`        | `\Users\{username}` |
-| `SessionName`     | `Console`           |
-| `UserDnsDomain`   | | The Fully Qualified Domain Name of the Active Directory domain
-| `UserDomain`      |                     | User domain name
-| `UserName`        |                     | User name
-|===
-
 
 ==== Special folder
 
@@ -1089,6 +1008,398 @@ $PROFILE | Get-Member -Type NoteProperty | Format-Table -Wrap
   powershell Environment+SpecialFolder - Google Search
 * https://learn.microsoft.com/en-us/dotnet/api/system.environment.specialfolder?redirectedfrom=MSDN&view=netframework-4.8[Environment.SpecialFolder Enum (System) | Microsoft Learn^]
 
+==== Create/Remove Directory
+
+* Create a directory
++
+[source,powershell]
+----
+New-Item -ItemType Directory foo
+----
+
+* Remove a directory
++
+[source,powershell]
+----
+Remove-Item -Path foo
+----
+
+* List files
++
+[source,ps1con]
+----
+> Get-ChildItem -Name packages_win64
+atomicwrites-1.4.0-py2.py3-none-any.whl
+attrs-20.3.0-py2.py3-none-any.whl
+colorama-0.4.4-py2.py3-none-any.whl
+iniconfig-1.1.1-py2.py3-none-any.whl
+packaging-20.9-py2.py3-none-any.whl
+pluggy-0.13.1-py2.py3-none-any.whl
+py-1.10.0-py2.py3-none-any.whl
+pyparsing-2.4.7-py2.py3-none-any.whl
+pytest-6.2.2-py3-none-any.whl
+toml-0.10.2-py2.py3-none-any.whl
+> Get-ChildItem packages_win64 | Where-Object { $ary = $_.Name -Split('-'); Write-Host($ary[0])}
+atomicwrites
+attrs
+colorama
+iniconfig
+packaging
+pluggy
+py
+pyparsing
+pytest
+toml
+>
+----
+
+==== Select-String
+
+* https://tech.sanwasystem.com/entry/2016/07/05/185717[grepコマンドとPowerShellのsls (Select-String)の比較 - Sanwa Systems Tech Blog^] +
+  powershell select-string ファイル名 出力しない - Google 検索
+
+.項目
+* IgnoreCase LineNumber
+* Line
+* Filename
+* Path
+
+//^
+
+* 1件のファイルから検索をする場合
++
+[source,powershell]
+----
+Select-String "pattern" filename.txt
+----
+
+* ファイル名は出力しない
++
+[source,powershell]
+----
+Select-String "pattern" filename | Select Line
+----
+
+* CSV出力
++
+[source,powershell]
+----
+Get-ChildItem src -Recurse -Force | Select-String -Pattern 'typing' | Export-Csv -NoTypeInformation result.csv -Encoding UTF8
+----
+
+* テーブル表示
++
+[source,powershell]
+----
+Get-ChildItem src -Recurse -Force | Select-String -Pattern 'typing' | Format-Table
+----
+
+==== Create/Remove/Copy a file
+
+* Create a new file
++
+[source,powershell]
+----
+New-Item -ItemType File -Path foo.txt
+----
+
+* Remove a file
++
+[source,powershell]
+----
+Remove-Item -Path foo.txt
+----
+
+** Delete file if exists
++
+[source,powershell]
+----
+$FileName = "D:\PowerShell\ZeroFileSize.txt"
+if (Test-Path $FileName) {
+  Remove-Item -Force $FileName
+}
+----
+
+* Copy a file
++
+[source,powershell]
+----
+Copy-Item "C:\foo.txt" -Destination "C:\Temp\"
+----
++
+.References
+* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.management/copy-item?view=powershell-7.2[Copy-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Docs^]
+
+[source,powershell]
+----
+New-Item -ItemType File -Path (Join-Path $env:TEMP -ChildPath foo.txt)
+Remove-Item -Path (Join-Path $env:TEMP -ChildPath foo.txt)
+----
+
+==== Rename/Move file
+
+* Rename single file
+
+** Using `Rename-Item`
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+Rename-Item (Join-Path $sourceDir "apple - a1.txt") -NewName "apple - a01.txt"
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+** Using `Move-Item`
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+Move-Item (Join-Path $sourceDir "apple - a1.txt") (Join-Path $sourceDir "apple - a01.txt")
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+** Using `Rename-Item` with pipe
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+$file1 | Rename-Item -NewName "apple - a01.txt"
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+** Using `Move-Item` with pipe
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+$file1 | Move-Item -Destination (Join-Path $sourceDir "apple - a01.txt")
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+** Using `MoveTo`
++
+[source,powershell]
+----
+$sourceDir = "C:\path to dir"
+$file1 = New-Item -path (Join-Path $sourceDir "apple - a1.txt")
+$file1.MoveTo((Join-Path $file1.Directory "apple - a01.txt"))
+Remove-Item (Join-Path $sourceDir "apple - a01.txt")
+----
+
+* Rename multiple files
++
+[source,powershell]
+----
+include::../src/fs/RenameFiles.ps1[tag=rename-files]
+----
++
+[subs="quotes"]
+.Results
+----
+... Before
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/10/16     12:30              0 apple - *n1*.txt
+-a----        2022/10/16     12:30              0 apple - *n2*.txt
+-a----        2022/10/16     12:30              0 apple - *n3*.txt
+-a----        2022/10/16     12:30              0 banana - n1.txt
+-a----        2022/10/16     12:30              0 banana - n2.txt
+-a----        2022/10/16     12:30              0 banana - n3.txt
+INFO: Rename succeeded.
+
+... After
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----        2022/10/16     12:30              0 apple - *n01*.txt
+-a----        2022/10/16     12:30              0 apple - *n02*.txt
+-a----        2022/10/16     12:30              0 apple - *n03*.txt
+-a----        2022/10/16     12:30              0 banana - n1.txt
+-a----        2022/10/16     12:30              0 banana - n2.txt
+-a----        2022/10/16     12:30              0 banana - n3.txt
+----
+
+.References
+* https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/rename-item?view=powershell-5.1#outputs[Rename-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Learn^]
+* https://learn.microsoft.com/ja-jp/powershell/module/microsoft.powershell.management/move-item?view=powershell-5.1[Move-Item (Microsoft.PowerShell.Management) - PowerShell | Microsoft Learn^]
+
+==== Join binary
+
+* https://stackoverflow.com/questions/1783554/fast-and-simple-binary-concatenate-files-in-powershell[Fast and simple binary concatenate files in Powershell - Stack Overflow^] +
+  powershell join binary files - Google Search
+
+[source,ps1con]
+----
+gc File1.bin,File2.bin -Encoding Byte -Read 512 | sc new.bin -Encoding Byte
+----
+
+==== Archive
+
+[source,powershell]
+----
+Compress-Archive memo.txt -DestinationPath out.zip
+Compress-Archive memo.txt -DestinationPath out.zip -Update -CompressionLevel NoCompression
+Compress-Archive memo.txt -DestinationPath out.zip -Update -CompressionLevel Optimal
+Compress-Archive memo.txt -DestinationPath out.zip -Update -CompressionLevel Fastest
+----
+
+[source,console]
+----
+> [io.compression.ZipFile]::OpenRead(".\Downloads\out.zip").entries | ? { $_.FullName -match "^[^/]+/*$"} | ft -a FullName,LastWriteTime
+FullName LastWriteTime
+-------- -------------
+memo.txt 2020/12/26 14:11:28 +09:00
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.archive/compress-archive?view=powershell-7.2[Compress-Archive (Microsoft.PowerShell.Archive) - PowerShell | Microsoft Docs^] +
+  Compress-Archive - Google 検索
+* https://docs.microsoft.com/ja-jp/dotnet/api/system.io.compression.zipfile.openread?view=net-6.0[ZipFile.OpenRead(String) メソッド (System.IO.Compression) | Microsoft Docs^]
+* https://takamaruo.hatenablog.com/entry/2018/10/02/232227[PowerShellでのzipファイルの内容確認・解凍 - たかまるの雑記^]
+
+=== Hardware
+
+==== HDD: Show disk information
+
+* Gets a list of all PhysicalDisk objects
++
+[source,powershell]
+----
+Get-PhysicalDisk
+----
++
+[source,powershell]
+.Show member
+----
+Get-PhysicalDisk | Get-Member
+----
+
+* Gets one or more disks visible to the operating system.
++
+[source,powershell]
+----
+Get-Disk
+----
++
+[source,powershell]
+.Show member
+----
+Get-Disk | Get-Member
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/get-physicaldisk?view=windowsserver2019-ps[Get-PhysicalDisk (Storage) | Microsoft Docs^]
+* https://docs.microsoft.com/en-us/powershell/module/storage/get-disk?view=windowsserver2019-ps[Get-Disk (Storage) | Microsoft Docs^]
+
+==== Get all RAW disks, initialize the disks, partition, and format them
+
+. Check disk number column and Partition Style column is `Raw`.
++
+[source,powershell]
+----
+Get-Disk
+----
+
+. Start powershell with the Run as Administrator
+
+. Initialize the disks, partition, and format them
++
+[source,powershell]
+----
+Get-Disk | Where-Object PartitionStyle -Eq "RAW" | Initialize-Disk -PartitionStyle GPT -PassThru | New-Partition -DriveLetter H -UseMaximumSize | Format-Volume -NewFileSystemLabel 'backup'
+----
+
+==== Initialize disk step by step
+
+. Check disk number
++
+[source,console]
+----
+PS C:\> Get-Disk
+----
+
+. Start powershell with the Run as Administrator
+
+. Initialize a disk on disk _2_ using the GPT partition
++
+[source,powershell]
+----
+Initialize-Disk -Number 2 -PartitionStyle GPT
+----
++
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/initialize-disk?view=windowsserver2019-ps[Initialize-Disk (Storage) | Microsoft Docs^]
+
+. Create a new partition on disk 2
++
+[source,powershell]
+----
+New-Partition -DiskNumber 2 -DriveLetter H
+----
++
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/new-partition?view=windowsserver2019-ps[New-Partition (Storage) | Microsoft Docs^]
+
+. Quick format `H` drives
++
+[source,powershell]
+----
+New-Partition -DiskNumber 2 -DriveLetter H -NewFileSystemLabel 'backup'
+----
++
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/format-volume?view=windowsserver2019-ps[Format-Volume (Storage) | Microsoft Docs^]
+
+==== How to convert my hard disk PartitionStyle from GPT back to RAW in Windows 10
+
+[source,powershell]
+----
+Clear-Disk -Number 2
+----
+
+.References
+* https://docs.microsoft.com/en-us/powershell/module/storage/clear-disk?view=windowsserver2019-ps[Clear-Disk (Storage) | Microsoft Docs^]
+
+==== BIOS
+
+`msinfo32`
+
+[source,powershell]
+.Show serial number
+----
+Get-CimInstance Win32_BIOS
+----
+
+=== Windows
+
+==== Get-WindowsOptionalFeature
+
+* Lists features related to the virtual machine platform
++
+[source,powershell]
+.Run as Administrator
+----
+Get-WindowsOptionalFeature -Online -FeatureName *plat*
+----
+
+==== Special Environment variables
+
+[cols="1a,1a,2a" options="autowidth"]
+|===
+| Env               | Examples            | Description
+
+| `ComputerName`    |                     | Your computer name
+| `HomeDrive`       | `C:`                |
+| `HomePath`        | `\Users\{username}` |
+| `SessionName`     | `Console`           |
+| `UserDnsDomain`   | | The Fully Qualified Domain Name of the Active Directory domain
+| `UserDomain`      |                     | User domain name
+| `UserName`        |                     | User name
+|===
 
 ==== Windows Registry
 
@@ -1142,7 +1453,34 @@ Test-Path 'HKLM:SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Upd
 Test-Path 'HKLM\Software\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending'
 ----
 
+==== User/Group
+
+* List user accounts
++
+[source,powershell]
+----
+Get-WmiObject Win32_UserAccount
+----
+
+* List group
++
+[source,powershell]
+----
+Get-WmiObject Win32_Group
+----
+
 ==== WSL
+
+* Paste image from Windows host to WSL2
++
+[source,shell]
+----
+powershell.exe '(Get-Clipboard -Format Image).Save("image.png")'
+----
++
+.References
+** https://qiita.com/yugo-yamamoto/items/1538344af52a0bdf4e75[WSL上からWindowsのクリップボードに保存されている画像をpng保存する - Qiita^] +
+  vscode wsl2 PasteImage - 検索
 
 * Get IP in WSL
 +
@@ -1166,46 +1504,45 @@ Invoke-WebRequest http://$((bash.exe -c "hostname -I").Split(" ")[0]):8080/hello
 Get-NetIPInterface | Where-Object {$_.InterfaceAlias -eq 'vEthernet (WSL)' -and $_.AddressFamily -eq 'IPv4'}
 ----
 
-==== Turn off the beep
+==== Show update history
+Windows Updateをインストールした後に再起動の状態をPowerShellで確認する
 
-* Windows
-+
 [source,powershell]
 ----
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-if (!(Test-Path -Path "$Profile")) {New-Item -ItemType File -Path "$Profile" -Force}
-Add-Content -Value "Set-PSReadlineOption -BellStyle None" -Path "$Profile"
+$Session = New-Object -ComObject "Microsoft.Update.Session"
+$Searcher = $Session.CreateUpdateSearcher()
+$historyCount = $Searcher.GetTotalHistoryCount()
+
+$Searcher.QueryHistory(0, $historyCount) | Select-Object Date,
+  @{
+    name="Operation";
+    expression={
+      switch($_.operation){
+        1 {"Installation"}; 
+        2 {"Uninstallation"};
+        3 {"Other"}
+      }
+    }
+  },
+  @{
+    name="Status";
+    expression={
+      switch($_.resultcode) {
+        1 {"In Progress"};
+        2 {"Succeeded"};
+        3 {"Succeeded With Errors"};
+        4 {"Failed"};
+        5 {"Aborted"}
+      }
+    }
+  }, Title | Out-GridView
 ----
 
-* Linux
-+
+==== スクリーンセーバーには入らなくなる
+
 [source,powershell]
 ----
-if (!(Test-Path -Path "$Profile")) {New-Item -ItemType File -Path "$Profile" -Force}
-Add-Content -Value "Set-PSReadlineOption -BellStyle None" -Path "$Profile"
+$s = '[DllImport("kernel32.dll")] public static extern int SetThreadExecutionState(long esFlags);'
+$w = (Add-Type -MemberDefinition $s -Name 'Win32API' -PassThru)
+while ($true) { $w::SetThreadExecutionState(2); Start-Sleep -Seconds 60 }
 ----
-
-=== Testing
-
-* pwsh
-+
-[source,powershell]
-----
-Install-Module -Name Pester -Force -SkipPublisherCheck
-----
-
-* Windows 10
-+
-[source,powershell]
-----
-$module = "C:\Program Files\WindowsPowerShell\Modules\Pester"
-takeown /F $module /A /R
-icacls $module /reset
-icacls $module /grant "*S-1-5-32-544:F" /inheritance:d /T
-Remove-Item -Path $module -Recurse -Force -Confirm:$false
-
-Install-Module -Name Pester -Force
-----
-
-.References
-* https://pester.dev/docs/introduction/installation[Installation and Update | Pester^]
