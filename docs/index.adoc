@@ -547,6 +547,23 @@ PS> @('AAA', 'BBB', 'CCC') -join "`t"
 AAA     BBB     CCC
 ----
 
+* Multiple substitution
++
+[source,powershell]
+----
+'hello world' -replace 'h', 'H' -replace 'w', 'W'
+----
+
+* Replace multiple strings
++
+[source,powershell]
+----
+$s="hello world"; @(@("h","H"), @("w","W")) | %{}{$s = $s -replace $_}{$s}
+$s="hello world"; @(@("h","H"), @("w","W")) | %{}{$s = $s.Replace($_[0], $_[1])}{$s}
+$s="hello world"; @{"h" = "H"; "w" ="W"}.GetEnumerator() | %{}{$s = $s.Replace($_.Name, $_.Value)}{$s}
+----
+
+
 === String
 
 ==== Encoding
